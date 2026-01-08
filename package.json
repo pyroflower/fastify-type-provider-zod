@@ -32,7 +32,7 @@
         "prepublishOnly": "pnpm run build"
     },
     "repository": {
-        "url": "https://github.com/pyroflower/fastify-type-provider-zod"
+        "url": "https://github.com/pyroflower/fastify-type-provider-zod.git"
     },
     "keywords": [
         "fastify",
