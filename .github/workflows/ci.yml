@@ -25,6 +25,9 @@ jobs:
       - run: pnpm install
       - run: pnpm build
       # - run: pnpm test:ci
+      - run: pnpm publish
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
 
   publish-gpr:
     needs: build
@@ -43,6 +46,7 @@ jobs:
         with:
           version: 9.12
           run_install: false
+      - run: pnpm install
       - run: pnpm publish
         env:
           NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
