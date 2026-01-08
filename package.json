@@ -75,5 +75,8 @@
     },
     "tsd": {
         "directory": "types"
+    },
+    "publishConfig": {
+        "registry": "https://npm.pkg.github.com"
     }
 }
