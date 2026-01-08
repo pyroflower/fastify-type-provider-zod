@@ -18,6 +18,9 @@ jobs:
           node-version: 24
       - name: Install pnpm
         uses: pnpm/action-setup@v4
+        with:
+          version: 9.12
+          run_install: false
       - run: pnpm install
       - run: pnpm build
       - run: pnpm test:ci
