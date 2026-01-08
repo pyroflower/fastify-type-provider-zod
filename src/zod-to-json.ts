@@ -151,7 +151,7 @@ export const zodRegistryToJson: (
   io: 'input' | 'output',
   config?: ZodToJsonConfig,
 ) => Record<string, JSONSchema.BaseSchema> = (registry, io, config = {}) => {
-  const { target = 'draft-2020-12' } = config
+  const { target = 'openapi-3.0' } = config
   const result = toJSONSchema(registry, {
     target,
     io,

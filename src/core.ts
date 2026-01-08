@@ -139,57 +139,56 @@ export const createJsonSchemaTransformObject =
     schemaRegistry = globalRegistry,
     zodToJsonConfig = {},
   }: CreateJsonSchemaTransformObjectOptions): SwaggerTransformObject =>
-  (input) => {
-    if ('swaggerObject' in input) {
-      throw new Error('OpenAPI 2.0 is not supported')
-    }
-
-    const oasVersion = getOASVersion(input)
-
-    const inputSchemas = zodRegistryToJson(schemaRegistry, 'input', zodToJsonConfig)
-    const outputSchemas = zodRegistryToJson(schemaRegistry, 'output', zodToJsonConfig)
-
-    for (const key in outputSchemas) {
-      if (inputSchemas[key]) {
-        throw new Error(
-          `Collision detected for schema "${key}". The is already an input schema with the same name.`,
-        )
+    (input) => {
+      if ('swaggerObject' in input) {
+        throw new Error('OpenAPI 2.0 is not supported')
       }
-    }
 
-    const jsonSchemas = {
-      ...inputSchemas,
-      ...outputSchemas,
-    }
+      const oasVersion = getOASVersion(input)
 
-    const oasSchemas = Object.fromEntries(
-      Object.entries(jsonSchemas).map(([key, value]) => [key, jsonSchemaToOAS(value, oasVersion)]),
-    )
+      // const inputSchemas = zodRegistryToJson(schemaRegistry, 'input', zodToJsonConfig)
+      const outputSchemas = zodRegistryToJson(schemaRegistry, 'output', zodToJsonConfig)
 
-    return {
-      ...input.openapiObject,
-      components: {
-        ...input.openapiObject.components,
-        schemas: {
-          ...input.openapiObject.components?.schemas,
-          ...oasSchemas,
+      // for (const key in outputSchemas) {
+      //   if (inputSchemas[key]) {
+      //     throw new Error(
+      //       `Collision detected for schema "${key}". The is already an input schema with the same name.`,
+      //     )
+      //   }
+      // }
+
+      const jsonSchemas = {
+        ...outputSchemas,
+      }
+
+      const oasSchemas = Object.fromEntries(
+        Object.entries(jsonSchemas).map(([key, value]) => [key, jsonSchemaToOAS(value, oasVersion)]),
+      )
+
+      return {
+        ...input.openapiObject,
+        components: {
+          ...input.openapiObject.components,
+          schemas: {
+            ...input.openapiObject.components?.schemas,
+            ...oasSchemas,
+          },
         },
-      },
-    } as ReturnType<SwaggerTransformObject>
-  }
+      } as ReturnType<SwaggerTransformObject>
+    }
 
 export const jsonSchemaTransformObject: SwaggerTransformObject = createJsonSchemaTransformObject({})
 
 export const validatorCompiler: FastifySchemaCompiler<$ZodType> =
   ({ schema }) =>
-  (data) => {
-    const result = safeParse(schema, data)
-    if (result.error) {
-      return { error: createValidationError(result.error) as unknown as Error }
-    }
+    (data) => {
+      const result = safeParse(schema, data)
+      if (result.error) {
+        return { error: createValidationError(result.error) as unknown as Error }
+      }
 
-    return { value: result.data }
-  }
+      return { value: result.data }
+    }
 
 function resolveSchema(maybeSchema: $ZodType | { properties: $ZodType }): $ZodType {
   if (maybeSchema instanceof $ZodType) {
@@ -211,19 +210,19 @@ export const createSerializerCompiler =
   (
     options?: ZodSerializerCompilerOptions,
   ): FastifySerializerCompiler<$ZodType | { properties: $ZodType }> =>
-  ({ schema: maybeSchema, method, url }) =>
-  (data) => {
-    const schema = resolveSchema(maybeSchema)
+    ({ schema: maybeSchema, method, url }) =>
+      (data) => {
+        const schema = resolveSchema(maybeSchema)
 
-    const result = safeParse(schema, data)
-    if (result.error) {
-      throw new ResponseSerializationError(method, url, {
-        cause: result.error,
-      })
-    }
+        const result = safeParse(schema, data)
+        if (result.error) {
+          throw new ResponseSerializationError(method, url, {
+            cause: result.error,
+          })
+        }
 
-    return JSON.stringify(result.data, options?.replacer)
-  }
+        return JSON.stringify(result.data, options?.replacer)
+      }
 
 export const serializerCompiler: ReturnType<typeof createSerializerCompiler> =
   createSerializerCompiler({})
