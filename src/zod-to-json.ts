@@ -9,7 +9,7 @@ import { $ZodRegistry, $ZodType, toJSONSchema } from 'zod/v4/core'
 import type { OASVersion } from './json-to-oas'
 
 const getSchemaId = (id: string, io: 'input' | 'output') => {
-  return io === 'input' ? `${id}Input` : id
+  return io === 'input' ? id : id
 }
 
 const getReferenceUri = (id: string, io: 'input' | 'output') => {
