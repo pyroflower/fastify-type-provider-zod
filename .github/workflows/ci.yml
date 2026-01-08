@@ -1,46 +1,39 @@
-name: CI
+name: Release on Github
 
 on:
   push:
     branches:
       - main
-  pull_request:
+    paths:
+      - package.json
 
 jobs:
-  test:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        node-version: [20, 22, 24]
-        os: [ubuntu-latest]
-
+  build:
+    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
-
-      - name: Use Node.js
-        uses: actions/setup-node@v6
+      - uses: actions/checkout@v4
+      - name: Set up Node
+        uses: actions/setup-node@v4
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: 24
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+      - run: pnpm install
+      - run: pnpm build
+      - run: pnpm test:ci
 
-      - name: Install
-        run: npm install
-
-      - name: Install PeerDeps
-        run: npm i fastify zod
-
-      - name: Run tests
-        run: npm run test:ci
-
-      - name: Run linting
-        run: npm run lint
-
-  automerge:
-    needs: test
+  publish-gpr:
+    needs: build
     runs-on: ubuntu-latest
     permissions:
-      pull-requests: write
-      contents: write
+      contents: read
+      packages: write
     steps:
-      - uses: fastify/github-action-merge-dependabot@v3
+      - uses: actions/checkout@v4
+      - name: Set up Node
+        uses: actions/setup-node@v4
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          node-version: 24
+      - run: pnpm publish
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
